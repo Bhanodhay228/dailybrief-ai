@@ -8,7 +8,7 @@ class NewsArticle:
     description: str
     source: str
     url: str
-    published_at: datetime
-    category: str
+    published_at: datetime | None
+    category: str = "Other"
     importance: float = 0.0
     user_priority: str = "Medium"

@@ -1,0 +1,15 @@
+CATEGORIES = [
+    "India / National",
+    "International / World",
+    "Politics & Government",
+    "Economy & Business",
+    "Technology & AI",
+    "Science & Space",
+    "Environment",
+    "Health",
+    "Law & Judiciary",
+    "Education",
+    "Sports",
+    "Entertainment",
+    "Other",
+]
