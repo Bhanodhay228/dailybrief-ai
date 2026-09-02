@@ -1,21 +1,14 @@
-import os
-import requests
-from dotenv import load_dotenv
+from app.news_api import NewsDataClient
 
-load_dotenv()
 
-api_key = os.getenv("NEWSDATA_API_KEY")
+client = NewsDataClient()
 
-url = "https://newsdata.io/api/1/latest"
+news = client.get_latest_news()
 
-params = {
-    "apikey": api_key,
-    "country": "in",
-    "language": "en",
-    "removeduplicate": 1,
-}
+print("News API working!")
+print("Number of results:", len(news.get("results", [])))
 
-response = requests.get(url, params=params)
-
-print("Status:", response.status_code)
-print("Response:", response.json())
+for article in news.get("results", [])[:3]:
+    print("\nTitle:", article.get("title"))
+    print("Source:", article.get("source_name"))
+    print("URL:", article.get("link"))

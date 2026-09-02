@@ -1,22 +1,11 @@
-import os
-from dotenv import load_dotenv
-from mistralai.client import Mistral
+from app.llm import MistralClient
 
-load_dotenv()
 
-api_key = os.getenv("MISTRAL_API_KEY")
+llm = MistralClient()
 
-client = Mistral(api_key=api_key)
-
-response = client.chat.complete(
-    model="mistral-small-latest",
-    messages=[
-        {
-            "role": "user",
-            "content": "In one sentence, explain what current affairs means."
-        }
-    ]
+response = llm.generate(
+    "In one sentence, explain what current affairs means."
 )
 
-print("Mistral response:")
-print(response.choices[0].message.content)
+print("Mistral client working!")
+print(response)
