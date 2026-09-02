@@ -1,13 +1,18 @@
-from app.models import NewsArticle
+from app.models import NewsEvent
 
 
 CRITICAL_IMPORTANCE_THRESHOLD = 9.0
 
 
 class ImportantNewsSelector:
-    def select(self, articles: list[NewsArticle]) -> list[NewsArticle]:
+
+    def select(
+        self,
+        events: list[NewsEvent]
+    ) -> list[NewsEvent]:
+
         return [
-            article
-            for article in articles
-            if article.importance >= CRITICAL_IMPORTANCE_THRESHOLD
+            event
+            for event in events
+            if event.importance >= CRITICAL_IMPORTANCE_THRESHOLD
         ]

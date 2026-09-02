@@ -1,4 +1,4 @@
-from app.models import NewsArticle
+from app.models import NewsEvent
 from app.preferences import UserPreferences
 
 
@@ -13,20 +13,26 @@ class NewsRanker:
     def __init__(self, preferences: UserPreferences):
         self.preferences = preferences
 
-    def rank(self, articles: list[NewsArticle]) -> list[NewsArticle]:
-        scored_articles = []
+    def rank(self, events: list[NewsEvent]) -> list[NewsEvent]:
+        scored_events = []
 
-        for article in articles:
-            priority = self.preferences.get_priority(article.category)
+        for event in events:
+            priority = self.preferences.get_priority(event.category)
+
             multiplier = PRIORITY_MULTIPLIERS[priority]
 
-            final_score = article.importance * multiplier
+            final_score = event.importance * multiplier
 
-            scored_articles.append((final_score, article))
+            scored_events.append(
+                (final_score, event)
+            )
 
-        scored_articles.sort(
+        scored_events.sort(
             key=lambda item: item[0],
             reverse=True,
         )
 
-        return [article for _, article in scored_articles]
+        return [
+            event
+            for _, event in scored_events
+        ]
