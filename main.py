@@ -14,6 +14,7 @@ st.set_page_config(
     page_title="DailyBrief AI",
     page_icon="📰",
     layout="wide",
+    initial_sidebar_state="expanded",
 )
 
 
@@ -46,33 +47,42 @@ pipeline = st.session_state.pipeline
 
 st.title("📰 DailyBrief AI")
 
-st.write(
-    "Personalized Indian Current Affairs & News Agent"
+st.markdown(
+    "### Your personalized Indian current affairs brief"
 )
-
-today = datetime.now()
 
 st.caption(
-    f"📅 {today.strftime('%A, %d %B %Y')}"
+    "AI-powered news synthesis • Event clustering • "
+    "Personalized ranking • Conversational Q&A"
 )
+
+st.markdown("---")
 
 
 # ==================================================
 # SIDEBAR
 # ==================================================
 
-st.sidebar.header("🎯 News Preferences")
+st.sidebar.title("🎯 Preferences")
+
+st.sidebar.caption(
+    "Customize how your daily brief is ranked."
+)
 
 selected_categories = st.sidebar.multiselect(
     "News Categories",
     ["All"] + CATEGORIES,
     default=["All"],
+    help="Choose All or select specific categories.",
 )
-
 
 st.sidebar.markdown("---")
 
-st.sidebar.subheader("⭐ Category Priorities")
+st.sidebar.subheader("⭐ Priority")
+
+st.sidebar.caption(
+    "Higher priority categories appear first."
+)
 
 priorities = {}
 
@@ -85,17 +95,31 @@ for category in CATEGORIES:
         key=f"priority_{category}",
     )
 
-
 st.sidebar.markdown("---")
 
 generate = st.sidebar.button(
     "🚀 Generate Today's Brief",
     use_container_width=True,
+    type="primary",
 )
+
+if st.session_state.brief:
+
+    if st.sidebar.button(
+        "🔄 Generate New Brief",
+        use_container_width=True,
+    ):
+
+        st.session_state.brief = None
+        st.session_state.generated = False
+        st.session_state.chat_messages = []
+        st.session_state.selected_event_title = None
+
+        st.rerun()
 
 
 # ==================================================
-# GENERATE
+# GENERATE BRIEF
 # ==================================================
 
 if generate:
@@ -118,12 +142,10 @@ if generate:
             st.session_state.brief = brief
             st.session_state.generated = True
 
-            # New brief = new conversation
             st.session_state.chat_messages = []
+            st.session_state.selected_event_title = None
 
-            st.success(
-                "Today's brief is ready! 🎉"
-            )
+            st.rerun()
 
         except Exception as e:
 
@@ -133,47 +155,72 @@ if generate:
 
 
 # ==================================================
-# INTRO
+# INTRO SCREEN
 # ==================================================
 
 if not st.session_state.generated:
 
+    today = datetime.now()
+
     st.info(
-        "Choose your preferences and click "
-        "'🚀 Generate Today's Brief'."
+        f"📅 Today's brief • "
+        f"{today.strftime('%A, %d %B %Y')}"
     )
 
-    st.markdown("## What DailyBrief AI does")
+    st.markdown("## How DailyBrief AI works")
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
 
-        st.markdown("### 🇮🇳 Indian News")
+        st.markdown("### 🇮🇳")
 
-        st.write(
-            "Collects Indian news across politics, "
-            "business, technology, science, sports, "
-            "health and other categories."
+        st.markdown("**Indian News**")
+
+        st.caption(
+            "News across major Indian categories."
         )
 
     with col2:
 
-        st.markdown("### 🤖 AI News Synthesis")
+        st.markdown("### 🧩")
 
-        st.write(
-            "Combines related reports into one "
-            "clear and factual news story."
+        st.markdown("**Event Clustering**")
+
+        st.caption(
+            "Related reports are combined into one story."
         )
 
     with col3:
 
-        st.markdown("### 💬 Follow-up Q&A")
+        st.markdown("### 🎯")
 
-        st.write(
-            "Ask questions about a story and get "
-            "fresh information from the web."
+        st.markdown("**Personalized Ranking**")
+
+        st.caption(
+            "Your priorities influence story ranking."
         )
+
+    with col4:
+
+        st.markdown("### 💬")
+
+        st.markdown("**Ask Questions**")
+
+        st.caption(
+            "Ask follow-up questions using fresh web information."
+        )
+
+    st.markdown("---")
+
+    st.markdown(
+        "### Ready to start?"
+    )
+
+    st.write(
+        "Choose your categories and priorities from "
+        "the sidebar, then generate today's brief."
+    )
 
 
 # ==================================================
@@ -222,15 +269,37 @@ if st.session_state.brief:
 
 
     # ==================================================
+    # DATE
+    # ==================================================
+
+    today = datetime.now()
+
+    st.markdown(
+        f"## 📅 {today.strftime('%A, %d %B %Y')}"
+    )
+
+    st.caption(
+        "Today's personalized Indian news briefing"
+    )
+
+
+    # ==================================================
     # IMPORTANT NEWS
     # ==================================================
 
+    st.markdown("---")
+
     st.header("🚨 You Should Know")
+
+    st.caption(
+        "Major events that deserve attention regardless "
+        "of your selected priorities."
+    )
 
     if not important_events:
 
         st.info(
-            "No critical Indian news events found."
+            "No critical events found."
         )
 
     else:
@@ -239,13 +308,13 @@ if st.session_state.brief:
 
             with st.container(border=True):
 
-                st.subheader(
-                    f"🚨 {event.title}"
+                st.markdown(
+                    f"## 🚨 {event.title}"
                 )
 
                 st.caption(
-                    f"📂 {event.category} • "
-                    f"Importance: "
+                    f"📂 {event.category}   •   "
+                    f"🔥 Importance "
                     f"{event.importance:.1f}/10"
                 )
 
@@ -258,7 +327,7 @@ if st.session_state.brief:
                 if event.key_facts:
 
                     st.markdown(
-                        "### 🔑 Key Points"
+                        "**🔑 Key Points**"
                     )
 
                     for fact in event.key_facts:
@@ -270,7 +339,7 @@ if st.session_state.brief:
                 if event.why_it_matters:
 
                     st.markdown(
-                        "### 💡 Why It Matters"
+                        "**💡 Why It Matters**"
                     )
 
                     st.write(
@@ -278,7 +347,7 @@ if st.session_state.brief:
                     )
 
                 st.markdown(
-                    "### 🔗 Sources"
+                    "**🔗 Sources**"
                 )
 
                 for article in event.articles:
@@ -295,21 +364,28 @@ if st.session_state.brief:
                             f"({article.url})"
                         )
 
-                    if article.published_at:
+                        if article.published_at:
 
-                        st.caption(
-                            "📅 "
-                            + format_published_date(
-                                article.published_at
+                            st.caption(
+                                "📅 "
+                                + format_published_date(
+                                    article.published_at
+                                )
                             )
-                        )
 
 
     # ==================================================
-    # TODAY'S NEWS
+    # NEWS SECTIONS
     # ==================================================
+
+    st.markdown("---")
 
     st.header("📰 Today's News")
+
+
+    # ==================================================
+    # ALL MODE
+    # ==================================================
 
     if "All" in selected_categories:
 
@@ -319,99 +395,250 @@ if st.session_state.brief:
             + low_events
         )[:35]
 
+        if display_events:
+
+            st.caption(
+                f"Showing {len(display_events)} stories"
+            )
+
+    # ==================================================
+    # SPECIFIC CATEGORIES
+    # ==================================================
+
     else:
 
         high_events = high_events[:15]
         medium_events = medium_events[:10]
         low_events = low_events[:10]
 
-        display_events = (
-            high_events
-            + medium_events
-            + low_events
-        )
 
+        # ----------------------------------------------
+        # HIGH PRIORITY
+        # ----------------------------------------------
 
-    if not display_events:
+        if high_events:
 
-        st.info(
-            "No news found for the selected categories."
-        )
+            st.subheader("🔥 High Priority")
 
-    else:
+            st.caption(
+                f"Up to 15 stories • "
+                f"{len(high_events)} available"
+            )
 
-        for event in display_events:
+            for event in high_events:
 
-            with st.container(border=True):
-
-                st.subheader(
-                    event.title
-                )
-
-                st.caption(
-                    f"📂 {event.category} • "
-                    f"Importance: "
-                    f"{event.importance:.1f}/10"
-                )
-
-                if event.summary:
-
-                    st.write(
-                        event.summary
-                    )
-
-                if event.key_facts:
+                with st.container(border=True):
 
                     st.markdown(
-                        "### 🔑 Key Points"
+                        f"### {event.title}"
                     )
 
-                    for fact in event.key_facts:
+                    st.caption(
+                        f"📂 {event.category}   •   "
+                        f"🔥 {event.importance:.1f}/10"
+                    )
+
+                    if event.summary:
+
+                        st.write(
+                            event.summary
+                        )
+
+                    if event.key_facts:
 
                         st.markdown(
-                            f"- {fact}"
+                            "**🔑 Key Points**"
                         )
 
-                if event.why_it_matters:
+                        for fact in event.key_facts:
 
-                    st.markdown(
-                        "### 💡 Why It Matters"
-                    )
-
-                    st.write(
-                        event.why_it_matters
-                    )
-
-                st.markdown(
-                    "### 🔗 Sources"
-                )
-
-                for article in event.articles:
-
-                    if article.url:
-
-                        source_name = (
-                            article.source
-                            or "Read source"
-                        )
-
-                        st.markdown(
-                            f"- [{source_name}]"
-                            f"({article.url})"
-                        )
-
-                    if article.published_at:
-
-                        st.caption(
-                            "📅 "
-                            + format_published_date(
-                                article.published_at
+                            st.markdown(
+                                f"- {fact}"
                             )
+
+                    if event.why_it_matters:
+
+                        st.markdown(
+                            "**💡 Why It Matters**"
                         )
+
+                        st.write(
+                            event.why_it_matters
+                        )
+
+                    st.markdown(
+                        "**🔗 Sources**"
+                    )
+
+                    for article in event.articles:
+
+                        if article.url:
+
+                            source_name = (
+                                article.source
+                                or "Read source"
+                            )
+
+                            st.markdown(
+                                f"- [{source_name}]"
+                                f"({article.url})"
+                            )
+
+
+        # ----------------------------------------------
+        # MEDIUM PRIORITY
+        # ----------------------------------------------
+
+        if medium_events:
+
+            st.markdown("---")
+
+            st.subheader("📰 Medium Priority")
+
+            st.caption(
+                f"Up to 10 stories • "
+                f"{len(medium_events)} available"
+            )
+
+            for event in medium_events:
+
+                with st.container(border=True):
+
+                    st.markdown(
+                        f"### {event.title}"
+                    )
+
+                    st.caption(
+                        f"📂 {event.category}   •   "
+                        f"Importance "
+                        f"{event.importance:.1f}/10"
+                    )
+
+                    if event.summary:
+
+                        st.write(
+                            event.summary
+                        )
+
+                    if event.key_facts:
+
+                        st.markdown(
+                            "**🔑 Key Points**"
+                        )
+
+                        for fact in event.key_facts:
+
+                            st.markdown(
+                                f"- {fact}"
+                            )
+
+                    if event.why_it_matters:
+
+                        st.markdown(
+                            "**💡 Why It Matters**"
+                        )
+
+                        st.write(
+                            event.why_it_matters
+                        )
+
+                    st.markdown(
+                        "**🔗 Sources**"
+                    )
+
+                    for article in event.articles:
+
+                        if article.url:
+
+                            source_name = (
+                                article.source
+                                or "Read source"
+                            )
+
+                            st.markdown(
+                                f"- [{source_name}]"
+                                f"({article.url})"
+                            )
+
+
+        # ----------------------------------------------
+        # LOW PRIORITY
+        # ----------------------------------------------
+
+        if low_events:
+
+            st.markdown("---")
+
+            st.subheader("📌 Low Priority")
+
+            st.caption(
+                f"Up to 10 stories • "
+                f"{len(low_events)} available"
+            )
+
+            for event in low_events:
+
+                with st.container(border=True):
+
+                    st.markdown(
+                        f"### {event.title}"
+                    )
+
+                    st.caption(
+                        f"📂 {event.category}   •   "
+                        f"Importance "
+                        f"{event.importance:.1f}/10"
+                    )
+
+                    if event.summary:
+
+                        st.write(
+                            event.summary
+                        )
+
+                    if event.key_facts:
+
+                        st.markdown(
+                            "**🔑 Key Points**"
+                        )
+
+                        for fact in event.key_facts:
+
+                            st.markdown(
+                                f"- {fact}"
+                            )
+
+                    if event.why_it_matters:
+
+                        st.markdown(
+                            "**💡 Why It Matters**"
+                        )
+
+                        st.write(
+                            event.why_it_matters
+                        )
+
+                    st.markdown(
+                        "**🔗 Sources**"
+                    )
+
+                    for article in event.articles:
+
+                        if article.url:
+
+                            source_name = (
+                                article.source
+                                or "Read source"
+                            )
+
+                            st.markdown(
+                                f"- [{source_name}]"
+                                f"({article.url})"
+                            )
 
 
     # ==================================================
-    # TELL ME MORE
+    # FOLLOW-UP Q&A
     # ==================================================
 
     st.markdown("---")
@@ -419,14 +646,14 @@ if st.session_state.brief:
     st.header("💬 Tell Me More")
 
     st.write(
-        "Select a story and ask follow-up questions. "
-        "DailyBrief AI searches for fresh information "
-        "before answering."
+        "Choose a story and ask follow-up questions. "
+        "Fresh web information is retrieved before "
+        "the answer is generated."
     )
 
 
     # ==================================================
-    # ALL EVENTS FOR CHAT
+    # BUILD EVENT LIST
     # ==================================================
 
     all_events = (
@@ -435,7 +662,6 @@ if st.session_state.brief:
         + brief["medium"]
         + brief["low"]
     )
-
 
     unique_events = []
 
@@ -452,19 +678,15 @@ if st.session_state.brief:
 
     if unique_events:
 
-        # ----------------------------------------------
-        # EVENT SELECTION
-        # ----------------------------------------------
-
         selected_event = st.selectbox(
-            "Select a news story",
+            "Choose a story",
             unique_events,
             format_func=lambda event: event.title,
         )
 
 
         # ----------------------------------------------
-        # RESET CHAT WHEN STORY CHANGES
+        # RESET CONVERSATION WHEN STORY CHANGES
         # ----------------------------------------------
 
         if (
@@ -480,7 +702,7 @@ if st.session_state.brief:
 
 
         # ----------------------------------------------
-        # SHOW PREVIOUS MESSAGES
+        # CHAT HISTORY
         # ----------------------------------------------
 
         for message in st.session_state.chat_messages:
@@ -499,13 +721,19 @@ if st.session_state.brief:
         # ----------------------------------------------
 
         question = st.chat_input(
-            "Ask something about this story..."
+            "Ask about this story..."
         )
 
 
         if question:
 
-            # Show user message
+            st.session_state.chat_messages.append(
+                {
+                    "role": "user",
+                    "content": question,
+                }
+            )
+
 
             with st.chat_message("user"):
 
@@ -514,14 +742,10 @@ if st.session_state.brief:
                 )
 
 
-            # ------------------------------------------
-            # GET AI ANSWER
-            # ------------------------------------------
-
             with st.chat_message("assistant"):
 
                 with st.spinner(
-                    "Finding fresh information..."
+                    "Searching for fresh information..."
                 ):
 
                     try:
@@ -537,15 +761,6 @@ if st.session_state.brief:
                             answer
                         )
 
-                        # Save conversation
-
-                        st.session_state.chat_messages.append(
-                            {
-                                "role": "user",
-                                "content": question,
-                            }
-                        )
-
                         st.session_state.chat_messages.append(
                             {
                                 "role": "assistant",
@@ -558,11 +773,3 @@ if st.session_state.brief:
                         st.error(
                             f"Unable to answer: {e}"
                         )
-
-
-    else:
-
-        st.info(
-            "No stories are available for "
-            "follow-up questions."
-        )
