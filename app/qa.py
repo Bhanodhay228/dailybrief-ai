@@ -9,7 +9,6 @@ class NewsQA:
         self.llm = MistralClient()
         self.search = WebSearchClient()
 
-
     def answer(
         self,
         question: str,
@@ -18,7 +17,7 @@ class NewsQA:
     ):
 
         # ------------------------------------------
-        # SEARCH FRESH INFORMATION
+        # Fresh search
         # ------------------------------------------
 
         search_query = (
@@ -32,7 +31,7 @@ class NewsQA:
 
 
         # ------------------------------------------
-        # FRESH SEARCH RESULTS
+        # Search information
         # ------------------------------------------
 
         sources_text = ""
@@ -56,12 +55,11 @@ Content:
 
 URL:
 {article.url}
-
 """
 
 
         # ------------------------------------------
-        # ORIGINAL EVENT SOURCES
+        # Original event sources
         # ------------------------------------------
 
         event_sources = ""
@@ -77,12 +75,11 @@ Title:
 
 URL:
 {article.url}
-
 """
 
 
         # ------------------------------------------
-        # CONVERSATION HISTORY
+        # Conversation
         # ------------------------------------------
 
         history_text = ""
@@ -94,20 +91,19 @@ URL:
                 history_text += f"""
 {message["role"].upper()}:
 {message["content"]}
-
 """
 
 
         # ------------------------------------------
-        # PROMPT
+        # Prompt
         # ------------------------------------------
 
         prompt = f"""
-You are an AI news assistant.
+You are DailyBrief AI, an Indian news assistant.
 
-You are helping the user understand an Indian news event.
+Answer the user's question about the news event below.
 
-CURRENT NEWS EVENT:
+CURRENT NEWS EVENT
 
 Title:
 {event.title}
@@ -124,41 +120,53 @@ Key Facts:
 Why It Matters:
 {event.why_it_matters}
 
-Original Sources:
+ORIGINAL SOURCES:
 {event_sources}
 
-
 PREVIOUS CONVERSATION:
-
 {history_text}
 
-
-USER'S NEW QUESTION:
-
+USER QUESTION:
 {question}
 
-
 FRESH SEARCH INFORMATION:
-
 {sources_text}
 
 
-INSTRUCTIONS:
+IMPORTANT ANSWER RULES:
 
-- Answer the user's question clearly.
-- Use the current news event as context.
-- Use fresh search information when relevant.
-- Use previous conversation context when relevant.
-- Do not invent facts.
-- If information is insufficient, clearly say so.
-- Prefer recent information when answering.
-- Keep the answer easy to understand.
-- Do not repeat the entire previous conversation.
+1. Keep the answer SHORT and easy to scan.
+2. Use simple bullet points.
+3. Give a maximum of 5 bullet points.
+4. Each bullet should normally be 1-2 sentences.
+5. Start with one short sentence directly answering the question.
+6. Do not write a long essay.
+7. Do not repeat the entire news story.
+8. Do not use Markdown headings such as ###.
+9. Do not use bold Markdown such as **text**.
+10. Do not use tables.
+11. Do not add unnecessary background information.
+12. Use only information provided by the event and fresh search results.
+13. Do not invent facts.
+14. If the information is insufficient, clearly say so.
+15. Prefer the newest relevant information.
 
-At the end provide:
 
-SOURCES:
-- source name: URL
+Use this exact structure:
+
+Direct answer: <one short sentence>
+
+• <important point>
+• <important point>
+• <important point>
+
+Sources:
+<source name> - <URL>
+<source name> - <URL>
+
+Do not add anything after the sources.
 """
 
-        return self.llm.generate(prompt)
+        return self.llm.generate(
+            prompt
+        )
