@@ -2,7 +2,7 @@
 
 > Personalized Indian Current Affairs & News Agent powered by GenAI.
 
-🔗 **Live Demo:** [[YOUR_RENDER_URL_HERE](https://dailybrief-ai-lat4.onrender.com/)]
+🔗 **Live Demo:** [(https://dailybrief-ai-lat4.onrender.com/)]
 
 DailyBrief AI is an AI-powered news briefing application that collects
 Indian news, groups related reports into real-world events, generates
