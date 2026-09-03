@@ -8,6 +8,8 @@ from app.preferences import UserPreferences
 from app.ranker import NewsRanker
 from app.highlights import ImportantNewsSelector
 from app.brief import DailyBriefBuilder
+from app.qa import NewsQA
+from app.conversation import ConversationManager
 
 
 class DailyBriefPipeline:
@@ -22,48 +24,84 @@ class DailyBriefPipeline:
         self.preferences = UserPreferences()
         self.ranker = NewsRanker(self.preferences)
         self.highlights = ImportantNewsSelector()
-        self.brief_builder = DailyBriefBuilder(self.preferences)
+        self.brief_builder = DailyBriefBuilder(
+            self.preferences
+        )
+
+        self.qa = NewsQA()
+        self.conversation = ConversationManager()
 
     def run(self):
-        articles = self.news_client.get_latest_news()
 
-        print("Articles retrieved:", len(articles))
+        articles = self.news_client.get_latest_news(
+            limit=10
+        )
+
+        print(
+            "Articles retrieved:",
+            len(articles)
+        )
 
         articles = self.deduplicator.remove_duplicates(articles)
 
         print("After deduplication:", len(articles))
 
-        categorized_articles = []
+        # Batch categorization
+        articles = self.categorizer.categorize_many(
+            articles
+        )
 
-        for article in articles:
-            article = self.categorizer.categorize(article)
-            categorized_articles.append(article)
+        # Batch importance scoring
+        articles = self.importance_scorer.score_many(
+            articles
+        )
 
-        scored_articles = []
-
-        for article in categorized_articles:
-            article = self.importance_scorer.score(article)
-            scored_articles.append(article)
-
-        events = self.clusterer.cluster(scored_articles)
+        # Cluster related articles into events
+        events = self.clusterer.cluster(articles)
 
         print("Events created:", len(events))
 
-        summarized_events = []
+        summarized_events = self.summarizer.summarize_many(
+            events
+        )
 
-        for event in events:
-            event = self.summarizer.summarize(event)
-            summarized_events.append(event)
+        # Rank events according to user preferences
+        ranked_events = self.ranker.rank(
+            summarized_events
+        )
 
-        ranked_events = self.ranker.rank(summarized_events)
-
+        # Find major events
         important_events = self.highlights.select(
             ranked_events
         )
 
+        # Build personalized brief
         brief = self.brief_builder.build(
             ranked_events,
             important_events,
         )
 
         return brief
+    def answer_question(
+    self,
+    question: str,
+    event,
+):
+
+        history = self.conversation.get_history()
+
+        answer = self.qa.answer(
+            question,
+            event,
+            history,
+        )
+
+        self.conversation.add_user_message(
+            question
+        )
+
+        self.conversation.add_assistant_message(
+            answer
+        )
+
+        return answer

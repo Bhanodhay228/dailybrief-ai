@@ -1,6 +1,5 @@
 CATEGORIES = [
     "India / National",
-    "International / World",
     "Politics & Government",
     "Economy & Business",
     "Technology & AI",

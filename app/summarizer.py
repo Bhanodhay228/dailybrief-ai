@@ -3,106 +3,245 @@ from app.models import NewsEvent
 
 
 class EventSummarizer:
+
     def __init__(self):
         self.llm = MistralClient()
 
-    def summarize(self, event: NewsEvent) -> NewsEvent:
+    def summarize_many(
+        self,
+        events: list[NewsEvent],
+    ) -> list[NewsEvent]:
 
-        articles_text = ""
+        if not events:
+            return []
 
-        for index, article in enumerate(event.articles, start=1):
-            articles_text += f"""
-ARTICLE {index}
+        events_text = ""
 
-Title:
-{article.title}
+        for index, event in enumerate(events):
 
-Source:
+            articles_text = ""
+
+            for article in event.articles:
+
+                articles_text += f"""
+SOURCE:
 {article.source}
 
-Description:
+TITLE:
+{article.title}
+
+DESCRIPTION:
 {article.description}
 
 """
 
-        prompt = f"""
-You are summarizing a real-world news event.
+            events_text += f"""
+EVENT {index}
 
-Multiple articles below may describe the same event.
+CATEGORY:
+{event.category}
 
-Create ONE factual synthesized story using only the information
-provided in these articles.
+IMPORTANCE:
+{event.importance}
 
+ARTICLES:
 {articles_text}
+"""
 
-Return exactly these sections:
 
-TITLE:
-Create a clear headline for the combined event.
+        prompt = f"""
+You are summarizing Indian news events.
 
-SUMMARY:
-Write a concise 3-4 sentence summary combining the information.
+Each EVENT below represents one real-world news event.
 
-KEY_FACTS:
-Provide 3-5 important factual points.
-Each point must start with "- ".
+Create one factual synthesized story for EACH event.
 
-WHY_IT_MATTERS:
-Explain in 2-3 sentences why this event matters.
+Use ONLY the information provided.
 
 Do not invent facts.
-Do not add information that is not present in the articles.
-If articles disagree or information is unclear, do not guess.
+
+{events_text}
+
+For every event, return exactly this format:
+
+EVENT 0
+TITLE: ...
+SUMMARY: ...
+KEY_FACTS:
+- ...
+- ...
+- ...
+WHY_IT_MATTERS: ...
+
+EVENT 1
+TITLE: ...
+SUMMARY: ...
+KEY_FACTS:
+- ...
+- ...
+- ...
+WHY_IT_MATTERS: ...
+
+Continue for every event.
+
+Rules:
+
+- Keep the same event number.
+- TITLE should be a clear news headline.
+- SUMMARY should be 3-4 sentences.
+- KEY_FACTS should contain 3-5 factual points.
+- WHY_IT_MATTERS should contain 2-3 sentences.
+- Do not combine different events.
+- Do not invent information.
+- If information is insufficient, say so.
 """
 
         response = self.llm.generate(prompt)
 
-        current_section = None
-        title_lines = []
-        summary_lines = []
-        key_facts = []
-        why_lines = []
+        self._parse_response(
+            response,
+            events,
+        )
 
-        for line in response.splitlines():
-            line = line.strip()
+        return events
+
+
+    def _parse_response(
+        self,
+        response: str,
+        events: list[NewsEvent],
+    ):
+
+        current_event = None
+        current_section = None
+
+        for raw_line in response.splitlines():
+
+            line = raw_line.strip()
 
             if not line:
                 continue
 
-            clean_line = line.strip("*").strip()
+            # ----------------------------------
+            # EVENT
+            # ----------------------------------
 
-            if clean_line == "TITLE:":
+            if line.startswith("EVENT "):
+
+                try:
+                    event_number = int(
+                        line.replace("EVENT ", "").strip()
+                    )
+
+                    if 0 <= event_number < len(events):
+
+                        current_event = events[event_number]
+                        current_section = None
+
+                except ValueError:
+                    pass
+
+                continue
+
+
+            # ----------------------------------
+            # TITLE
+            # ----------------------------------
+
+            if line.startswith("TITLE:"):
+
+                if current_event:
+
+                    current_event.title = (
+                        line.replace("TITLE:", "", 1)
+                        .strip()
+                    )
+
                 current_section = "title"
+
                 continue
 
-            if clean_line == "SUMMARY:":
+
+            # ----------------------------------
+            # SUMMARY
+            # ----------------------------------
+
+            if line.startswith("SUMMARY:"):
+
+                if current_event:
+
+                    current_event.summary = (
+                        line.replace("SUMMARY:", "", 1)
+                        .strip()
+                    )
+
                 current_section = "summary"
+
                 continue
 
-            if clean_line == "KEY_FACTS:":
+
+            # ----------------------------------
+            # KEY FACTS
+            # ----------------------------------
+
+            if line.startswith("KEY_FACTS:"):
+
                 current_section = "facts"
+
                 continue
 
-            if clean_line == "WHY_IT_MATTERS:":
+
+            # ----------------------------------
+            # WHY IT MATTERS
+            # ----------------------------------
+
+            if line.startswith("WHY_IT_MATTERS:"):
+
+                if current_event:
+
+                    current_event.why_it_matters = (
+                        line.replace(
+                            "WHY_IT_MATTERS:",
+                            "",
+                            1,
+                        ).strip()
+                    )
+
                 current_section = "why"
+
                 continue
 
-            if current_section == "title":
-                title_lines.append(clean_line)
 
-            elif current_section == "summary":
-                summary_lines.append(clean_line)
+            # ----------------------------------
+            # CONTINUATION / FACTS
+            # ----------------------------------
 
-            elif current_section == "facts":
-                if clean_line.startswith("- "):
-                    key_facts.append(clean_line[2:].strip())
+            if current_event:
 
-            elif current_section == "why":
-                why_lines.append(clean_line)
+                if current_section == "summary":
 
-        event.title = " ".join(title_lines).strip()
-        event.summary = " ".join(summary_lines).strip()
-        event.key_facts = key_facts
-        event.why_it_matters = " ".join(why_lines).strip()
+                    current_event.summary += (
+                        " " + line
+                    )
 
-        return event
+                elif current_section == "facts":
+
+                    if line.startswith("-"):
+
+                        current_event.key_facts.append(
+                            line.lstrip("- ").strip()
+                        )
+
+                elif current_section == "why":
+
+                    current_event.why_it_matters += (
+                        " " + line
+                    )
+
+
+    def summarize(
+        self,
+        event: NewsEvent,
+    ) -> NewsEvent:
+
+        return self.summarize_many([event])[0]
