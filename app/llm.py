@@ -46,7 +46,7 @@ class MistralClient:
     ) -> str:
 
         response = self.client.chat.complete(
-            model="mistral-embed-2312",
+            model="ministral-8b-2512",
             messages=[
                 {
                     "role": "user",
