@@ -2103,3 +2103,140 @@ a:focus-visible {
     border-color: var(--primary);
     color: white;
 }
+
+/* =========================================================
+   GOVERNMENT EXAM MODE
+   ========================================================= */
+
+.exam-mode-bar {
+    margin: 24px 0 30px;
+    padding: 20px 22px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.exam-mode-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.exam-mode-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.exam-mode-subtitle {
+    margin-top: 3px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.exam-mode-button {
+    flex-shrink: 0;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 18px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--primary);
+    color: white;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.exam-mode-button:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+.exam-mode-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Exam cards */
+
+.exam-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    padding: 21px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+}
+
+.exam-card:hover {
+    transform: translateY(-3px);
+}
+
+.exam-badge {
+    display: inline-flex;
+    width: fit-content;
+    margin-bottom: 10px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: var(--surface-soft);
+    color: var(--primary);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.exam-facts {
+    margin: 8px 0 16px 18px;
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+}
+
+.exam-facts li {
+    margin-bottom: 5px;
+}
+
+.revision-box {
+    margin-top: auto;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    font-size: 0.83rem;
+}
+
+.exam-source {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 13px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.74rem;
+}
+
+.exam-source a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.exam-source a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 700px) {
+    .exam-mode-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .exam-mode-button {
+        width: 100%;
+    }
+}
