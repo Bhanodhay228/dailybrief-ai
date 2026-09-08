@@ -17,6 +17,7 @@ if str(ROOT_DIR) not in sys.path:
 from app.pipeline import DailyBriefPipeline
 from app.models import NewsArticle, NewsEvent
 from app.categories import CATEGORIES
+from app.exam_news import GovernmentExamNews
 
 
 # ==================================================
@@ -48,6 +49,7 @@ app.add_middleware(
 # ==================================================
 
 pipeline = DailyBriefPipeline()
+exam_news = GovernmentExamNews()
 
 
 # ==================================================
@@ -227,6 +229,26 @@ def generate_brief(
 
         }
 
+
+    except Exception as exc:
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(exc),
+        )
+
+# ==================================================
+# GOVERNMENT EXAM CURRENT AFFAIRS
+# ==================================================
+
+@app.post("/api/exam-brief")
+def generate_exam_brief():
+
+    try:
+
+        brief = exam_news.generate_brief()
+
+        return brief
 
     except Exception as exc:
 

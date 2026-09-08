@@ -32,7 +32,6 @@ TITLE:
 
 DESCRIPTION:
 {article.description}
-
 """
 
             events_text += f"""
@@ -48,69 +47,138 @@ ARTICLES:
 {articles_text}
 """
 
-
         prompt = f"""
-You are summarizing Indian news events.
+You are DailyBrief AI, an Indian news summarization assistant.
 
-Each EVENT below represents one real-world news event.
-
-Create one factual synthesized story for EACH event.
+Summarize every news event below.
 
 Use ONLY the information provided.
-
-Do not invent facts.
+Do NOT invent facts.
 
 {events_text}
 
-For every event, return exactly this format:
+IMPORTANT:
+Return ONLY the following format.
+Do not use Markdown.
+Do not use **.
+Do not use ###.
 
 EVENT 0
-TITLE: ...
-SUMMARY: ...
+TITLE: headline
+SUMMARY: 3-4 sentence factual summary
 KEY_FACTS:
-- ...
-- ...
-- ...
-WHY_IT_MATTERS: ...
+- factual point 1
+- factual point 2
+- factual point 3
+WHY_IT_MATTERS: 2-3 sentence explanation
 
 EVENT 1
-TITLE: ...
-SUMMARY: ...
+TITLE: headline
+SUMMARY: 3-4 sentence factual summary
 KEY_FACTS:
-- ...
-- ...
-- ...
-WHY_IT_MATTERS: ...
+- factual point 1
+- factual point 2
+- factual point 3
+WHY_IT_MATTERS: 2-3 sentence explanation
 
 Continue for every event.
 
-Rules:
-
-- Keep the same event number.
-- TITLE should be a clear news headline.
-- SUMMARY should be 3-4 sentences.
-- KEY_FACTS should contain 3-5 factual points.
-- WHY_IT_MATTERS should contain 2-3 sentences.
+RULES:
+- Keep event numbers exactly the same.
+- Give exactly 3 useful key facts when possible.
+- Every key fact must start with "-".
+- Summary must contain actual information from the articles.
+- Do not simply repeat the headline.
 - Do not combine different events.
 - Do not invent information.
-- If information is insufficient, say so.
 """
 
         response = self.llm.generate(prompt)
 
-        self._parse_response(
-            response,
-            events,
-        )
+        # Debug: lets us see exactly what Mistral returned
+        print("\n========== MISTRAL SUMMARY RESPONSE ==========")
+        print(response)
+        print("================================================\n")
+
+        self._parse_response(response, events)
+
+        # -------------------------------------------------
+        # FALLBACK
+        # -------------------------------------------------
+
+        for event in events:
+
+            # If Mistral returned nothing usable,
+            # use the original article descriptions.
+            if not event.summary:
+
+                descriptions = []
+
+                for article in event.articles:
+
+                    if article.description:
+                        descriptions.append(
+                            article.description.strip()
+                        )
+
+                if descriptions:
+
+                    event.summary = " ".join(
+                        descriptions[:2]
+                    )
+
+            # Create visible key points
+            if not event.key_facts:
+
+                if event.summary:
+
+                    sentences = (
+                        event.summary
+                        .replace("!", ".")
+                        .replace("?", ".")
+                        .split(".")
+                    )
+
+                    sentences = [
+                        s.strip()
+                        for s in sentences
+                        if s.strip()
+                    ]
+
+                    event.key_facts = sentences[:3]
+
+                # Last fallback: article titles
+                if not event.key_facts:
+
+                    event.key_facts = [
+                        article.title
+                        for article in event.articles[:3]
+                        if article.title
+                    ]
+
+            if not event.summary:
+
+                event.summary = (
+                    "This event was identified from "
+                    "the latest available Indian news."
+                )
+
+            if not event.why_it_matters:
+
+                event.why_it_matters = (
+                    "This story was included in the daily "
+                    "brief based on its relevance and importance."
+                )
 
         return events
-
 
     def _parse_response(
         self,
         response: str,
         events: list[NewsEvent],
     ):
+
+        print("\n========== PARSING MISTRAL RESPONSE ==========")
 
         current_event = None
         current_section = None
@@ -122,122 +190,214 @@ Rules:
             if not line:
                 continue
 
-            # ----------------------------------
-            # EVENT
-            # ----------------------------------
+            # Remove markdown formatting
+            line = line.replace("**", "")
+            line = line.lstrip("#").strip()
 
-            if line.startswith("EVENT "):
+            # ------------------------------------------
+            # EVENT
+            # ------------------------------------------
+
+            if line.upper().startswith("EVENT "):
 
                 try:
                     event_number = int(
-                        line.replace("EVENT ", "").strip()
+                        line[6:].strip().rstrip(":")
                     )
 
                     if 0 <= event_number < len(events):
 
                         current_event = events[event_number]
+
+                        current_event.summary = ""
+                        current_event.key_facts = []
+                        current_event.why_it_matters = ""
+
                         current_section = None
 
-                except ValueError:
-                    pass
+                        print(
+                            f"Parsing EVENT {event_number}"
+                        )
+
+                except Exception as e:
+
+                    print(
+                        "EVENT parsing error:",
+                        e
+                    )
 
                 continue
 
+            if current_event is None:
+                continue
 
-            # ----------------------------------
+            upper = line.upper()
+
+            # ------------------------------------------
             # TITLE
-            # ----------------------------------
+            # ------------------------------------------
 
-            if line.startswith("TITLE:"):
+            if upper.startswith("TITLE:"):
 
-                if current_event:
-
-                    current_event.title = (
-                        line.replace("TITLE:", "", 1)
-                        .strip()
-                    )
+                current_event.title = (
+                    line.split(":", 1)[1].strip()
+                )
 
                 current_section = "title"
 
                 continue
 
-
-            # ----------------------------------
+            # ------------------------------------------
             # SUMMARY
-            # ----------------------------------
+            # ------------------------------------------
 
-            if line.startswith("SUMMARY:"):
+            if upper.startswith("SUMMARY:"):
 
-                if current_event:
-
-                    current_event.summary = (
-                        line.replace("SUMMARY:", "", 1)
-                        .strip()
-                    )
+                current_event.summary = (
+                    line.split(":", 1)[1].strip()
+                )
 
                 current_section = "summary"
 
                 continue
 
-
-            # ----------------------------------
+            # ------------------------------------------
             # KEY FACTS
-            # ----------------------------------
+            # ------------------------------------------
 
-            if line.startswith("KEY_FACTS:"):
+            if (
+                upper.startswith("KEY_FACTS:")
+                or upper.startswith("KEY FACTS:")
+                or upper.startswith("KEY-FACTS:")
+            ):
 
                 current_section = "facts"
 
+                # Sometimes the first fact is on
+                # the same line as KEY_FACTS:
+                remainder = (
+                    line.split(":", 1)[1].strip()
+                )
+
+                if remainder:
+
+                    if remainder.startswith("-"):
+
+                        fact = (
+                            remainder
+                            .lstrip("-")
+                            .strip()
+                        )
+
+                        if fact:
+                            current_event.key_facts.append(
+                                fact
+                            )
+
                 continue
 
-
-            # ----------------------------------
+            # ------------------------------------------
             # WHY IT MATTERS
-            # ----------------------------------
+            # ------------------------------------------
 
-            if line.startswith("WHY_IT_MATTERS:"):
+            if (
+                upper.startswith("WHY_IT_MATTERS:")
+                or upper.startswith("WHY IT MATTERS:")
+                or upper.startswith("WHY-IT-MATTERS:")
+            ):
 
-                if current_event:
-
-                    current_event.why_it_matters = (
-                        line.replace(
-                            "WHY_IT_MATTERS:",
-                            "",
-                            1,
-                        ).strip()
-                    )
+                current_event.why_it_matters = (
+                    line.split(":", 1)[1].strip()
+                )
 
                 current_section = "why"
 
                 continue
 
+            # ------------------------------------------
+            # CONTINUATION
+            # ------------------------------------------
 
-            # ----------------------------------
-            # CONTINUATION / FACTS
-            # ----------------------------------
+            if current_section == "summary":
 
-            if current_event:
+                current_event.summary += (
+                    " " + line
+                )
 
-                if current_section == "summary":
+            elif current_section == "facts":
 
-                    current_event.summary += (
-                        " " + line
+                # -
+                if line.startswith("-"):
+
+                    fact = (
+                        line
+                        .lstrip("-")
+                        .strip()
                     )
 
-                elif current_section == "facts":
-
-                    if line.startswith("-"):
-
+                    if fact:
                         current_event.key_facts.append(
-                            line.lstrip("- ").strip()
+                            fact
                         )
 
-                elif current_section == "why":
+                # •
+                elif line.startswith("•"):
 
-                    current_event.why_it_matters += (
-                        " " + line
+                    fact = (
+                        line
+                        .lstrip("•")
+                        .strip()
                     )
 
+                    if fact:
+                        current_event.key_facts.append(
+                            fact
+                        )
+
+                # *
+                elif line.startswith("*"):
+
+                    fact = (
+                        line
+                        .lstrip("*")
+                        .strip()
+                    )
+
+                    if fact:
+                        current_event.key_facts.append(
+                            fact
+                        )
+
+            elif current_section == "why":
+
+                current_event.why_it_matters += (
+                    " " + line
+                )
+
+    # ------------------------------------------
+    # FINAL DEBUG
+    # ------------------------------------------
+
+        print("\n========== PARSED EVENTS ==========")
+
+        for index, event in enumerate(events):
+
+            print(f"\nEVENT {index}")
+            print("TITLE:", event.title)
+            print("SUMMARY:", event.summary)
+            print("KEY FACTS:", event.key_facts)
+            print(
+                "WHY:",
+                event.why_it_matters
+            )
+
+        print(
+            "\n====================================\n"
+        )
+
+    # ==================================================
+    # SINGLE EVENT
+    # ==================================================
 
     def summarize(
         self,

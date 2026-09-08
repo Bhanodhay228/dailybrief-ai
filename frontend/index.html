@@ -1,14 +1,17 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="DailyBrief AI — Personalized Indian current affairs and news briefings."
     >
 
     <title>DailyBrief AI</title>
@@ -17,504 +20,654 @@
         rel="stylesheet"
         href="/style.css"
     >
-
 </head>
 
 
 <body>
 
+    <!-- =====================================================
+         NAVBAR
+         ===================================================== -->
 
-<!-- ==============================================
-     NAVBAR
-     ============================================== -->
+    <header class="navbar">
 
-<header class="navbar">
+        <div class="navbar-inner">
 
-    <div class="brand">
+            <div class="brand">
 
-        <div class="brand-icon">
-            📰
-        </div>
-
-        <div>
-
-            <div class="brand-name">
-                DailyBrief
-            </div>
-
-            <div class="brand-ai">
-                AI
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="nav-right">
-
-        <span id="currentDate">
-            Loading...
-        </span>
-
-        <button
-            id="preferencesBtn"
-            class="nav-button"
-        >
-            ⚙ Preferences
-        </button>
-
-    </div>
-
-</header>
-
-
-<!-- ==============================================
-     MAIN
-     ============================================== -->
-
-<main class="container">
-
-
-    <!-- HERO -->
-
-    <section class="hero">
-
-        <div class="hero-content">
-
-            <div class="eyebrow">
-                🇮🇳 INDIA • DAILY BRIEFING
-            </div>
-
-            <h1>
-                Know what matters.
-                <span>Skip the noise.</span>
-            </h1>
-
-            <p>
-                DailyBrief AI turns Indian news into
-                clear, personalized stories you can
-                understand in minutes.
-            </p>
-
-        </div>
-
-
-        <button
-            id="generateBtn"
-            class="primary-button"
-        >
-            Generate Today's Brief
-        </button>
-
-    </section>
-    
-    <!-- ==========================================
-         CATEGORY NAVIGATION
-         ========================================== -->
-
-    <section class="category-bar">
-
-        <button
-            class="category active"
-            data-category="All"
-        >
-            All
-        </button>
-
-        <button
-            class="category"
-            data-category="India / National"
-        >
-            🇮🇳 India
-        </button>
-
-        <button
-            class="category"
-            data-category="Politics & Government"
-        >
-            🏛️ Politics
-        </button>
-
-        <button
-            class="category"
-            data-category="Economy & Business"
-        >
-            💼 Business
-        </button>
-
-        <button
-            class="category"
-            data-category="Technology & AI"
-        >
-            💻 Technology
-        </button>
-
-        <button
-            class="category"
-            data-category="Science & Space"
-        >
-            🔬 Science
-        </button>
-
-        <button
-            class="category"
-            data-category="Environment"
-        >
-            🌱 Environment
-        </button>
-
-        <button
-            class="category"
-            data-category="Health"
-        >
-            ❤️ Health
-        </button>
-
-        <button
-            class="category"
-            data-category="Law & Judiciary"
-        >
-            ⚖️ Law
-        </button>
-
-        <button
-            class="category"
-            data-category="Education"
-        >
-            🎓 Education
-        </button>
-
-        <button
-            class="category"
-            data-category="Sports"
-        >
-            ⚽ Sports
-        </button>
-
-    </section>
-
-
-    <!-- ==========================================
-         LOADING
-         ========================================== -->
-
-    <section
-        id="loading"
-        class="loading hidden"
-    >
-
-        <div class="big-spinner"></div>
-
-        <h3>
-            Building your daily brief
-        </h3>
-
-        <p>
-            Fetching, categorizing and synthesizing
-            Indian news...
-        </p>
-
-    </section>
-
-
-    <!-- ERROR -->
-
-    <div
-        id="error"
-        class="error hidden"
-    ></div>
-
-
-    <!-- ==========================================
-         BRIEF
-         ========================================== -->
-
-    <section
-        id="brief"
-        class="hidden"
-    >
-
-        <div class="brief-heading">
-
-            <div>
-
-                <div class="eyebrow">
-                    TODAY'S BRIEF
+                <div class="brand-icon">
+                    📰
                 </div>
 
-                <h2 id="briefDate">
-                    Indian News
-                </h2>
-
-            </div>
-
-
-            <div
-                id="storyCount"
-                class="story-count"
-            >
-            </div>
-
-        </div>
-
-
-        <!-- IMPORTANT -->
-
-        <section
-            id="importantSection"
-            class="important-section"
-        >
-
-            <div class="section-heading">
-
-                <div>
-
-                    <span>
-                        🚨
-                    </span>
-
-                    <h2>
-                        You Should Know
-                    </h2>
-
-                </div>
-
-                <span>
-                    Major events
-                </span>
-
-            </div>
-
-
-            <div
-                id="importantStories"
-                class="featured-grid"
-            >
-            </div>
-
-        </section>
-
-
-        <!-- NEWS -->
-
-        <section class="news-section">
-
-            <div class="section-heading">
-
-                <div>
-
-                    <span>
-                        📰
-                    </span>
-
-                    <h2>
-                        Today's News
-                    </h2>
-
+                <div class="brand-name">
+                    DailyBrief
+                    <span class="brand-ai">AI</span>
                 </div>
 
             </div>
 
 
-            <div
-                id="newsStories"
-                class="news-grid"
-            >
-            </div>
+            <div class="nav-right">
 
-        </section>
+                <div
+                    id="currentDate"
+                    class="nav-date"
+                ></div>
 
-    </section>
-
-
-    <!-- ==========================================
-         CHAT
-         ========================================== -->
-
-    <section
-        id="chatSection"
-        class="chat-section hidden"
-    >
-
-        <div class="chat-header">
-
-            <div class="eyebrow">
-                GO DEEPER
-            </div>
-
-            <h2>
-                💬 Ask DailyBrief
-            </h2>
-
-            <p>
-                Ask a follow-up question and get
-                fresh information from the web.
-            </p>
-
-        </div>
-
-
-        <div class="chat-layout">
-
-
-            <div class="chat-story-selector">
-
-                <label>
-                    ASK ABOUT
-                </label>
-
-                <select id="storySelect">
-                </select>
-
-            </div>
-
-
-            <div
-                id="chatMessages"
-                class="chat-messages"
-            >
-
-                <div class="chat-empty">
-
-                    <div>
-                        💡
-                    </div>
-
-                    <p>
-                        Select a story and ask
-                        DailyBrief anything about it.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="chat-input-row">
-
-                <input
-                    id="questionInput"
-                    type="text"
-                    autocomplete="off"
-                    placeholder="e.g. Why is this important?"
-                >
 
                 <button
-                    id="askBtn"
-                    class="primary-button"
+                    id="themeToggle"
+                    class="theme-toggle"
+                    type="button"
+                    aria-label="Switch to dark mode"
+                    title="Switch to dark mode"
                 >
-                    Ask
+                    <span id="themeIcon">🌙</span>
+                </button>
+
+
+                <button
+                    id="preferencesBtn"
+                    class="nav-button"
+                    type="button"
+                >
+                    ⚙️ Preferences
                 </button>
 
             </div>
 
         </div>
 
-    </section>
-
-</main>
+    </header>
 
 
-<!-- ==============================================
-     PREFERENCES MODAL
-     ============================================== -->
 
-<div
-    id="preferencesModal"
-    class="modal hidden"
->
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
 
-    <div class="modal-backdrop"></div>
+    <main>
 
 
-    <div class="modal-box">
+        <!-- =================================================
+             HERO
+             ================================================= -->
 
-        <div class="modal-header">
+        <section class="hero">
 
-            <div>
+            <div class="container">
 
                 <div class="eyebrow">
-                    PERSONALIZATION
+                    🇮🇳 India's Daily AI News Brief
                 </div>
 
+
+                <h1>
+                    Know what matters.
+                    <br>
+                    Skip the noise.
+                </h1>
+
+
+                <p>
+                    Get a personalized briefing of the most
+                    important Indian news, summarized by AI
+                    and organized around what matters to you.
+                </p>
+
+
+                <button
+                    id="generateBtn"
+                    class="primary-button"
+                    type="button"
+                >
+                    <span>✨</span>
+                    Generate Today's Brief
+                </button>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             CATEGORY FILTERS
+             ================================================= -->
+
+        <section class="container">
+
+            <div class="category-bar">
+
+                <button
+                    class="category active"
+                    data-category="All"
+                    type="button"
+                >
+                    All
+                </button>
+
+
+                <button
+                    class="category"
+                    data-category="India / National"
+                    type="button"
+                >
+                    🇮🇳 India
+                </button>
+
+
+                <button
+                    class="category"
+                    data-category="Politics & Government"
+                    type="button"
+                >
+                    🏛️ Politics
+                </button>
+
+
+                <button
+                    class="category"
+                    data-category="Economy & Business"
+                    type="button"
+                >
+                    💼 Business
+                </button>
+
+
+                <button
+                    class="category"
+                    data-category="Technology & AI"
+                    type="button"
+                >
+                    🤖 Technology
+                </button>
+
+
+                <button
+                    class="category"
+                    data-category="Science & Space"
+                    type="button"
+                >
+                    🔬 Science
+                </button>
+
+
+                <button
+                    class="category"
+                    data-category="Environment"
+                    type="button"
+                >
+                    🌱 Environment
+                </button>
+
+
+                <button
+                    class="category"
+                    data-category="Health"
+                    type="button"
+                >
+                    ❤️ Health
+                </button>
+
+
+                <button
+                    class="category"
+                    data-category="Law & Judiciary"
+                    type="button"
+                >
+                    ⚖️ Law
+                </button>
+
+
+                <button
+                    class="category"
+                    data-category="Education"
+                    type="button"
+                >
+                    🎓 Education
+                </button>
+
+
+                <button
+                    class="category"
+                    data-category="Sports"
+                    type="button"
+                >
+                    🏏 Sports
+                </button>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             GOVERNMENT EXAM CURRENT AFFAIRS
+             ================================================= -->
+
+        <section class="container">
+
+            <div class="exam-mode-bar">
+
+                <div class="exam-mode-content">
+
+                    <div class="exam-mode-info">
+
+                        <div class="exam-mode-title">
+                             Government Exam Current Affairs
+                        </div>
+
+                        <div class="exam-mode-subtitle">
+                            SSC • Banking • Railway • UPSC • State PSC
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        id="examBriefBtn"
+                        class="exam-mode-button"
+                        type="button"
+                    >
+                        Get Exam Current Affairs
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             LOADING
+             ================================================= -->
+
+        <section
+            id="loading"
+            class="container hidden"
+        >
+
+            <div class="spinner"></div>
+
+            <p>
+                Fetching today's news and creating your
+                personalized briefing…
+            </p>
+
+        </section>
+
+
+
+        <!-- =================================================
+             ERROR
+             ================================================= -->
+
+        <section
+            id="error"
+            class="container hidden"
+            role="alert"
+        ></section>
+
+
+
+        <!-- =================================================
+             BRIEF
+             ================================================= -->
+
+        <section
+            id="brief"
+            class="container hidden"
+        >
+
+            <!-- =============================================
+                 BRIEF HEADER
+                 ============================================= -->
+
+            <div class="brief-heading">
+
+                <div>
+
+                    <h2>
+                        Today's Brief
+                    </h2>
+
+                    <div
+                        id="briefDate"
+                        class="brief-date"
+                    ></div>
+
+                </div>
+
+
+                <div
+                    id="storyCount"
+                    class="story-count"
+                >
+                    0 stories
+                </div>
+
+            </div>
+
+
+
+            <!-- =============================================
+                 IMPORTANT STORIES
+                 ============================================= -->
+
+            <section
+                id="importantSection"
+                class="important-section hidden"
+            >
+
+                <div class="section-heading">
+
+                    <span>🚨</span>
+
+                    <div>
+
+                        <h2>
+                            You Should Know
+                        </h2>
+
+                        <p>
+                            High-importance developments
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="importantStories"
+                    class="featured-grid"
+                ></div>
+
+            </section>
+
+
+
+            <!-- =============================================
+                 ALL NEWS
+                 ============================================= -->
+
+            <section class="news-section">
+
+                <div class="section-heading">
+
+                    <span>📰</span>
+
+                    <div>
+
+                        <h2>
+                            Today's Stories
+                        </h2>
+
+                        <p>
+                            Important developments,
+                            simplified.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="newsStories"
+                    class="news-grid"
+                ></div>
+
+            </section>
+
+        </section>
+
+
+
+        <!-- =================================================
+             Q&A SECTION
+             ================================================= -->
+
+        <section
+            id="chatSection"
+            class="chat-section container hidden"
+        >
+
+            <div class="chat-section-header">
+
                 <h2>
-                    News Preferences
+                    Ask about the news
                 </h2>
 
                 <p>
-                    Choose how much attention each
-                    category should receive.
+                    Have a follow-up question?
+                    Select a story and ask anything about it.
                 </p>
 
             </div>
 
 
-            <button
-                id="closePreferences"
-                class="close-button"
-            >
-                ×
-            </button>
 
-        </div>
+            <div class="chat-layout">
 
+                <!-- =========================================
+                     CHAT SIDEBAR
+                     ========================================= -->
 
-        <div
-            id="preferencesList"
-            class="preferences-list"
-        >
-        </div>
+                <aside class="chat-sidebar">
 
-
-        <div class="modal-footer">
-
-            <button
-                id="resetPreferences"
-                class="secondary-button"
-            >
-                Reset
-            </button>
+                    <label
+                        for="storySelect"
+                    >
+                        Story
+                    </label>
 
 
-            <button
-                id="savePreferences"
-                class="primary-button"
-            >
-                Save Preferences
-            </button>
+                    <select
+                        id="storySelect"
+                    >
+
+                        <option value="">
+                            Generate a brief first
+                        </option>
+
+                    </select>
+
+                </aside>
+
+
+
+                <!-- =========================================
+                     CHAT PANEL
+                     ========================================= -->
+
+                <div class="chat-panel">
+
+                    <div
+                        id="chatMessages"
+                        class="chat-messages"
+                    >
+
+                        <div class="chat-empty">
+
+                            <div class="chat-empty-icon">
+                                💬
+                            </div>
+
+                            <h3>
+                                Ask about today's news
+                            </h3>
+
+                            <p>
+                                Ask a question about any
+                                story and I'll search for
+                                fresh information.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =====================================
+                         CHAT INPUT
+                         ===================================== -->
+
+                    <div class="chat-input-area">
+
+                        <textarea
+                            id="questionInput"
+                            rows="1"
+                            placeholder="Ask a follow-up question…"
+                            aria-label="Ask a question"
+                        ></textarea>
+
+
+                        <button
+                            id="askBtn"
+                            type="button"
+                        >
+                            Ask →
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+
+    <!-- =====================================================
+         PREFERENCES MODAL
+         ===================================================== -->
+
+    <div
+        id="preferencesModal"
+        class="modal hidden"
+    >
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h2>
+                    Your Preferences
+                </h2>
+
+
+                <button
+                    id="closePreferences"
+                    class="modal-close"
+                    type="button"
+                    aria-label="Close preferences"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <p class="modal-description">
+
+                Choose how important each category is to you.
+                Higher-priority categories can influence your
+                personalized briefing.
+
+            </p>
+
+
+
+            <div
+                id="preferencesList"
+            ></div>
+
+
+
+            <div class="modal-footer">
+
+                <div class="modal-footer-left">
+
+                    <button
+                        id="resetPreferences"
+                        class="secondary-button danger-button"
+                        type="button"
+                    >
+                        Reset
+                    </button>
+
+
+                    <button
+                        id="cancelPreferences"
+                        class="secondary-button"
+                        type="button"
+                    >
+                        Cancel
+                    </button>
+
+                </div>
+
+
+                <div class="modal-footer-right">
+
+                    <button
+                        id="savePreferences"
+                        class="save-button"
+                        type="button"
+                    >
+                        Save Preferences
+                    </button>
+
+                </div>
+
+            </div>
 
         </div>
 
     </div>
 
-</div>
 
 
-<!-- ==============================================
-     FOOTER
-     ============================================== -->
+    <!-- =====================================================
+         FOOTER
+         ===================================================== -->
 
-<footer>
+    <footer>
 
-    <div>
-        <strong>DailyBrief AI</strong>
-        <span> • </span>
-        Indian Current Affairs
-    </div>
-    <p>
-    NewsData.io free plan data may have a delay of up to 12 hours.
-    Follow-up questions use fresh web search when available.
-    </p>
+        <div class="container">
 
-    <div>
-        Powered by GenAI
-    </div>
-
-</footer>
+            <p>
+                DailyBrief AI · Personalized Indian
+                Current Affairs
+            </p>
 
 
-<script src="/app.js"></script>
+            <p>
+                News may have a delay of up to 12 hours.
+                Follow-up questions use fresh web search
+                when available.
+            </p>
+
+        </div>
+
+    </footer>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
+
+    <script src="/app.js"></script>
 
 </body>
 
