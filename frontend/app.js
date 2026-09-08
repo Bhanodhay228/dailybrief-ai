@@ -178,24 +178,28 @@ function initTheme() {
 
 if (themeToggle) {
 
-    themeToggle.addEventListener(
-        "click",
-        () => {
+    themeToggle.addEventListener("click", () => {
+        const isDark = !document.body.classList.contains("dark-mode");
 
-            const isDark =
-                document.body.classList.contains(
-                    "dark-mode"
-                );
+        applyTheme(isDark ? "dark" : "light");
 
-            applyTheme(
-                isDark
-                    ? "light"
-                    : "dark"
-            );
+        // Replay the sky animation
+        const sky = document.querySelector(".theme-sky");
+
+        if (sky) {
+            sky.classList.remove("theme-changing");
+
+            // Force browser to restart the animation
+            void sky.offsetWidth;
+
+            sky.classList.add("theme-changing");
+
+            setTimeout(() => {
+                sky.classList.remove("theme-changing");
+            }, 1600);
         }
-    );
+    });
 }
-
 
 // ============================================================
 // DATE
@@ -2636,8 +2640,3 @@ function formatAnswer(
 
     return html;
 }
-
-
-// ============================================================
-// END
-// ============================================================
