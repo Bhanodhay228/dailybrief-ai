@@ -3,31 +3,18 @@
 // ==================================================
 
 const DEFAULT_PREFERENCES = {
-
     "India / National": "Medium",
-
     "Politics & Government": "Medium",
-
     "Economy & Business": "Medium",
-
     "Technology & AI": "Medium",
-
     "Science & Space": "Medium",
-
     "Environment": "Medium",
-
     "Health": "Medium",
-
     "Law & Judiciary": "Medium",
-
     "Education": "Medium",
-
     "Sports": "Medium",
-
     "Entertainment": "Medium",
-
     "Other": "Medium",
-
 };
 
 
@@ -36,13 +23,9 @@ const DEFAULT_PREFERENCES = {
 // ==================================================
 
 let currentBrief = null;
-
 let currentCategory = "All";
-
 let currentEvents = [];
-
 let selectedStoryIndex = 0;
-
 let preferences = loadPreferences();
 
 
@@ -50,63 +33,23 @@ let preferences = loadPreferences();
 // ELEMENTS
 // ==================================================
 
-const generateBtn =
-    document.getElementById("generateBtn");
-
-const loading =
-    document.getElementById("loading");
-
-const errorBox =
-    document.getElementById("error");
-
-const brief =
-    document.getElementById("brief");
-
-const chatSection =
-    document.getElementById("chatSection");
-
-const importantSection =
-    document.getElementById("importantSection");
-
-const importantStories =
-    document.getElementById("importantStories");
-
-const newsStories =
-    document.getElementById("newsStories");
-
-const briefDate =
-    document.getElementById("briefDate");
-
-const storyCount =
-    document.getElementById("storyCount");
-
-const storySelect =
-    document.getElementById("storySelect");
-
-const chatMessages =
-    document.getElementById("chatMessages");
-
-const questionInput =
-    document.getElementById("questionInput");
-
-const askBtn =
-    document.getElementById("askBtn");
-
-const preferencesBtn =
-    document.getElementById(
-        "preferencesBtn"
-    );
-
-const preferencesModal =
-    document.getElementById(
-        "preferencesModal"
-    );
-
-const preferencesList =
-    document.getElementById(
-        "preferencesList"
-    );
-
+const generateBtn = document.getElementById("generateBtn");
+const loading = document.getElementById("loading");
+const errorBox = document.getElementById("error");
+const brief = document.getElementById("brief");
+const chatSection = document.getElementById("chatSection");
+const importantSection = document.getElementById("importantSection");
+const importantStories = document.getElementById("importantStories");
+const newsStories = document.getElementById("newsStories");
+const briefDate = document.getElementById("briefDate");
+const storyCount = document.getElementById("storyCount");
+const storySelect = document.getElementById("storySelect");
+const chatMessages = document.getElementById("chatMessages");
+const questionInput = document.getElementById("questionInput");
+const askBtn = document.getElementById("askBtn");
+const preferencesBtn = document.getElementById("preferencesBtn");
+const preferencesModal = document.getElementById("preferencesModal");
+const preferencesList = document.getElementById("preferencesList");
 
 
 // ==================================================
@@ -114,7 +57,6 @@ const preferencesList =
 // ==================================================
 
 displayCurrentDate();
-
 renderPreferences();
 
 
@@ -123,25 +65,19 @@ renderPreferences();
 // ==================================================
 
 function displayCurrentDate() {
-
     const now = new Date();
 
-    const formatted =
-        now.toLocaleDateString(
-            "en-IN",
-            {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-            }
-        );
+    const formatted = now.toLocaleDateString(
+        "en-IN",
+        {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+        }
+    );
 
-
-    document.getElementById(
-        "currentDate"
-    ).textContent = formatted;
-
+    document.getElementById("currentDate").textContent = formatted;
 }
 
 
@@ -149,47 +85,24 @@ function displayCurrentDate() {
 // CATEGORY BUTTONS
 // ==================================================
 
-document
-    .querySelectorAll(".category")
-    .forEach(button => {
+document.querySelectorAll(".category").forEach(button => {
 
-        button.addEventListener(
-            "click",
-            () => {
+    button.addEventListener("click", () => {
 
-                document
-                    .querySelectorAll(".category")
-                    .forEach(item => {
+        document.querySelectorAll(".category").forEach(item => {
+            item.classList.remove("active");
+        });
 
-                        item.classList.remove(
-                            "active"
-                        );
+        button.classList.add("active");
 
-                    });
+        currentCategory = button.dataset.category;
 
-
-                button.classList.add(
-                    "active"
-                );
-
-
-                currentCategory =
-                    button.dataset.category;
-
-
-                if (currentBrief) {
-
-                    renderBrief(
-                        currentBrief,
-                        false
-                    );
-
-                }
-
-            }
-        );
-
+        if (currentBrief) {
+            renderBrief(currentBrief, false);
+        }
     });
+
+});
 
 
 // ==================================================
@@ -205,62 +118,42 @@ generateBtn.addEventListener(
 async function generateBrief() {
 
     setLoading(true);
-
     hideError();
-
     generateBtn.disabled = true;
-
 
     try {
 
-        const response =
-            await fetch(
-                "/api/brief",
-                {
-                    method: "POST",
+        const response = await fetch(
+            "/api/brief",
+            {
+                method: "POST",
 
-                    headers: {
-                        "Content-Type":
-                            "application/json",
-                    },
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-                    body: JSON.stringify({
+                body: JSON.stringify({
+                    categories: ["All"],
+                    priorities: preferences
+                })
+            }
+        );
 
-                        categories: [
-                            "All"
-                        ],
-
-                        priorities:
-                            preferences,
-
-                    }),
-
-                }
-            );
-
-
-        const data =
-            await response.json();
-
+        const data = await response.json();
 
         if (!response.ok) {
-
             throw new Error(
                 data.detail ||
                 "Unable to generate brief."
             );
-
         }
 
-
         currentBrief = data;
-
 
         renderBrief(
             data,
             true
         );
-
 
     } catch (error) {
 
@@ -271,11 +164,9 @@ async function generateBrief() {
     } finally {
 
         setLoading(false);
-
         generateBtn.disabled = false;
 
     }
-
 }
 
 
@@ -288,51 +179,30 @@ function renderBrief(
     rebuildChat = true
 ) {
 
-    brief.classList.remove(
-        "hidden"
-    );
+    brief.classList.remove("hidden");
+    chatSection.classList.remove("hidden");
 
-
-    chatSection.classList.remove(
-        "hidden"
-    );
-
-
-    briefDate.textContent =
-        data.date;
-
+    briefDate.textContent = data.date;
 
     renderImportant(
         data.important
     );
 
-
     renderNews(
         data.news
     );
 
-
     if (rebuildChat) {
-
-        buildChatStories(
-            data
-        );
-
+        buildChatStories(data);
     }
 
-
-    const total =
-        filterEvents(
-            [
-                ...data.important,
-                ...data.news,
-            ]
-        ).length;
-
+    const total = filterEvents([
+        ...data.important,
+        ...data.news
+    ]).length;
 
     storyCount.textContent =
         `${total} stories`;
-
 }
 
 
@@ -340,25 +210,16 @@ function renderBrief(
 // FILTER
 // ==================================================
 
-function filterEvents(
-    events
-) {
+function filterEvents(events) {
 
-    if (
-        currentCategory === "All"
-    ) {
-
+    if (currentCategory === "All") {
         return events;
-
     }
-
 
     return events.filter(
         event =>
-            event.category ===
-            currentCategory
+            event.category === currentCategory
     );
-
 }
 
 
@@ -366,13 +227,10 @@ function filterEvents(
 // IMPORTANT STORIES
 // ==================================================
 
-function renderImportant(
-    events
-) {
+function renderImportant(events) {
 
     const filtered =
         filterEvents(events);
-
 
     if (!filtered.length) {
 
@@ -381,14 +239,11 @@ function renderImportant(
         );
 
         return;
-
     }
-
 
     importantSection.classList.remove(
         "hidden"
     );
-
 
     importantStories.innerHTML =
         filtered
@@ -400,7 +255,6 @@ function renderImportant(
                     )
             )
             .join("");
-
 }
 
 
@@ -408,22 +262,16 @@ function renderImportant(
 // NEWS
 // ==================================================
 
-function renderNews(
-    events
-) {
+function renderNews(events) {
 
     const filtered =
         filterEvents(events);
-
 
     if (!filtered.length) {
 
         newsStories.innerHTML = `
             <div class="empty-state">
-
-                <div>
-                    📰
-                </div>
+                <div>📰</div>
 
                 <h3>
                     No stories in this category
@@ -432,14 +280,11 @@ function renderNews(
                 <p>
                     Try another category.
                 </p>
-
             </div>
         `;
 
         return;
-
     }
-
 
     newsStories.innerHTML =
         filtered
@@ -451,7 +296,6 @@ function renderNews(
                     )
             )
             .join("");
-
 }
 
 
@@ -465,26 +309,85 @@ function createStoryCard(
 ) {
 
     const facts =
-        event.key_facts || [];
+        Array.isArray(event.key_facts)
+            ? event.key_facts
+            : [];
 
+    /*
+     * Show the first 3 key facts directly.
+     * This is the main "Summarized" section.
+     */
+    const summaryPoints =
+        facts.slice(0, 3);
+
+    const summarizedHTML =
+        summaryPoints.length
+            ? `
+                <div class="summarized">
+
+                    <div class="summarized-header">
+                        <span class="summary-icon">✦</span>
+                        <span>Summarized</span>
+                    </div>
+
+                    <ul class="summary-points">
+
+                        ${summaryPoints
+                            .map(
+                                fact =>
+                                    `
+                                    <li>
+                                        ${escapeHtml(fact)}
+                                    </li>
+                                    `
+                            )
+                            .join("")
+                        }
+
+                    </ul>
+
+                </div>
+            `
+            : event.summary
+                ? `
+                    <div class="summarized">
+
+                        <div class="summarized-header">
+                            <span class="summary-icon">✦</span>
+                            <span>Summarized</span>
+                        </div>
+
+                        <p class="summary-fallback">
+                            ${escapeHtml(event.summary)}
+                        </p>
+
+                    </div>
+                `
+                : "";
+
+
+    /*
+     * Remaining facts are available
+     * through the expandable section.
+     */
+    const remainingFacts =
+        facts.slice(3);
 
     const factsHTML =
-        facts.length
+        remainingFacts.length
             ? `
                 <details class="details">
 
                     <summary>
-                        🔑 Key facts
+                        More key facts
                     </summary>
 
                     <ul>
 
-                        ${facts
+                        ${remainingFacts
                             .map(
                                 fact =>
-                                    `<li>${escapeHtml(
-                                        fact
-                                    )}</li>`
+                                    `<li>${escapeHtml(fact)}</li>`
                             )
                             .join("")
                         }
@@ -501,9 +404,12 @@ function createStoryCard(
             ? `
                 <div class="why">
 
-                    <strong>
-                        💡 Why it matters
-                    </strong>
+                    <div class="why-header">
+                        <span>💡</span>
+                        <strong>
+                            Why it matters
+                        </strong>
+                    </div>
 
                     <p>
                         ${escapeHtml(
@@ -522,6 +428,19 @@ function createStoryCard(
         );
 
 
+    const importance =
+        Number(event.importance || 0);
+
+
+    let importanceClass = "low";
+
+    if (importance >= 8) {
+        importanceClass = "high";
+    } else if (importance >= 6) {
+        importanceClass = "medium";
+    }
+
+
     return `
 
         <article
@@ -532,20 +451,28 @@ function createStoryCard(
             }"
         >
 
-            <div class="story-category">
+            <div class="story-top">
 
-                ${escapeHtml(
-                    event.category
-                )}
+                <span class="story-category">
+                    ${escapeHtml(
+                        event.category || "News"
+                    )}
+                </span>
+
+                <span class="importance-pill ${importanceClass}">
+                    ${importance.toFixed(1)}
+                    <span>/10</span>
+                </span>
 
             </div>
 
 
             <h3 class="story-title">
 
-                ${featured
-                    ? "🚨 "
-                    : ""
+                ${
+                    featured
+                        ? `<span class="alert-icon">🚨</span>`
+                        : ""
                 }
 
                 ${escapeHtml(
@@ -555,35 +482,44 @@ function createStoryCard(
             </h3>
 
 
-            <div class="story-meta">
-
-                Importance
-                ${Number(
-                    event.importance
-                ).toFixed(1)}/10
-
-            </div>
+            ${summarizedHTML}
 
 
-            <p class="story-summary">
-
-                ${escapeHtml(
-                    event.summary
-                )}
-
-            </p>
+            ${whyHTML}
 
 
             ${factsHTML}
 
-            ${whyHTML}
 
             ${sourcesHTML}
+
+
+            <div class="story-footer">
+
+                <span>
+                    ${event.articles?.length || 0}
+                    source${
+                        (event.articles?.length || 0) === 1
+                            ? ""
+                            : "s"
+                    }
+                </span>
+
+                <button
+                    class="ask-story-button"
+                    type="button"
+                    onclick="askAboutStory(${escapeAttribute(
+                        JSON.stringify(event.title)
+                    )})"
+                >
+                    Ask about this →
+                </button>
+
+            </div>
 
         </article>
 
     `;
-
 }
 
 
@@ -599,11 +535,8 @@ function createSources(
         !articles ||
         !articles.length
     ) {
-
         return "";
-
     }
-
 
     return `
 
@@ -619,7 +552,6 @@ function createSources(
                     let time =
                         "Time unavailable";
 
-
                     if (
                         article.published_at
                     ) {
@@ -629,21 +561,22 @@ function createSources(
                                 article.published_at
                             );
 
+                        if (!isNaN(date.getTime())) {
 
-                        time =
-                            date.toLocaleString(
-                                "en-IN",
-                                {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                }
-                            );
+                            time =
+                                date.toLocaleString(
+                                    "en-IN",
+                                    {
+                                        day: "2-digit",
+                                        month: "short",
+                                        year: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit"
+                                    }
+                                );
 
+                        }
                     }
-
 
                     return `
 
@@ -651,12 +584,15 @@ function createSources(
 
                             <a
                                 href="${escapeAttribute(
-                                    article.url
+                                    article.url || "#"
                                 )}"
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
-                                🔗
+                                <span class="source-link-icon">
+                                    ↗
+                                </span>
+
                                 ${escapeHtml(
                                     article.source ||
                                     "News source"
@@ -678,7 +614,43 @@ function createSources(
         </div>
 
     `;
+}
 
+
+// ==================================================
+// ASK ABOUT STORY
+// ==================================================
+
+function askAboutStory(title) {
+
+    if (!currentEvents.length) {
+        return;
+    }
+
+    const index =
+        currentEvents.findIndex(
+            event =>
+                event.title === title
+        );
+
+    if (index === -1) {
+        return;
+    }
+
+    selectedStoryIndex = index;
+
+    storySelect.value = String(index);
+
+    resetChat();
+
+    chatSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+
+    setTimeout(() => {
+        questionInput.focus();
+    }, 500);
 }
 
 
@@ -692,9 +664,8 @@ function buildChatStories(
 
     currentEvents = [
         ...data.important,
-        ...data.news,
+        ...data.news
     ];
-
 
     storySelect.innerHTML =
         currentEvents
@@ -709,12 +680,9 @@ function buildChatStories(
             )
             .join("");
 
-
     selectedStoryIndex = 0;
 
-
     resetChat();
-
 }
 
 
@@ -730,7 +698,6 @@ storySelect.addEventListener(
             Number(
                 storySelect.value
             );
-
 
         resetChat();
 
@@ -758,11 +725,9 @@ function getHistory() {
 
     }
 
-
     return conversationHistory[
         selectedStoryIndex
     ];
-
 }
 
 
@@ -776,18 +741,21 @@ function resetChat() {
 
         <div class="chat-empty">
 
-            <div>
-                💡
+            <div class="chat-empty-icon">
+                ✦
             </div>
 
             <p>
                 Ask anything about this story.
             </p>
 
+            <span>
+                DailyBrief will search for fresh information.
+            </span>
+
         </div>
 
     `;
-
 }
 
 
@@ -806,8 +774,11 @@ questionInput.addEventListener(
     event => {
 
         if (
-            event.key === "Enter"
+            event.key === "Enter" &&
+            !event.shiftKey
         ) {
+
+            event.preventDefault();
 
             askQuestion();
 
@@ -822,36 +793,24 @@ async function askQuestion() {
     const question =
         questionInput.value.trim();
 
-
     if (!question) {
-
         return;
-
     }
-
 
     if (
         !currentEvents.length
     ) {
-
         return;
-
     }
-
 
     const event =
         currentEvents[
             selectedStoryIndex
         ];
 
-
     const history =
         getHistory();
 
-
-    // ------------------------------------------
-    // Show user message
-    // ------------------------------------------
 
     addMessage(
         "user",
@@ -862,20 +821,10 @@ async function askQuestion() {
     questionInput.value = "";
 
 
-    // ------------------------------------------
-    // Disable controls
-    // ------------------------------------------
-
     askBtn.disabled = true;
-
     questionInput.disabled = true;
-
     storySelect.disabled = true;
 
-
-    // ------------------------------------------
-    // AI loading
-    // ------------------------------------------
 
     const loadingMessage =
         addLoadingMessage();
@@ -891,7 +840,7 @@ async function askQuestion() {
 
                     headers: {
                         "Content-Type":
-                            "application/json",
+                            "application/json"
                     },
 
                     body: JSON.stringify({
@@ -903,10 +852,9 @@ async function askQuestion() {
                             event,
 
                         history:
-                            history,
+                            history
 
-                    }),
-
+                    })
                 }
             );
 
@@ -935,19 +883,15 @@ async function askQuestion() {
         );
 
 
-        // --------------------------------------
-        // Save conversation
-        // --------------------------------------
-
         history.push({
             role: "user",
-            content: question,
+            content: question
         });
 
 
         history.push({
             role: "assistant",
-            content: data.answer,
+            content: data.answer
         });
 
 
@@ -957,19 +901,15 @@ async function askQuestion() {
             loadingMessage
         );
 
-
         addMessage(
             "assistant",
             `Sorry, something went wrong: ${error.message}`
         );
 
-
     } finally {
 
         askBtn.disabled = false;
-
         questionInput.disabled = false;
-
         storySelect.disabled = false;
 
         questionInput.focus();
@@ -993,19 +933,15 @@ function addMessage(
             "div"
         );
 
-
     message.className =
         `message ${role}`;
-
 
     message.textContent =
         content;
 
-
     chatMessages.appendChild(
         message
     );
-
 
     chatMessages.scrollTop =
         chatMessages.scrollHeight;
@@ -1024,10 +960,8 @@ function addLoadingMessage() {
             "div"
         );
 
-
     message.className =
         "message assistant ai-loading";
-
 
     message.innerHTML = `
 
@@ -1038,11 +972,9 @@ function addLoadingMessage() {
             </span>
 
             <span class="thinking-dots">
-
                 <span></span>
                 <span></span>
                 <span></span>
-
             </span>
 
         </div>
@@ -1054,18 +986,14 @@ function addLoadingMessage() {
 
     `;
 
-
     chatMessages.appendChild(
         message
     );
 
-
     chatMessages.scrollTop =
         chatMessages.scrollHeight;
 
-
     return message;
-
 }
 
 
@@ -1098,21 +1026,17 @@ function addAssistantMessage(
             "div"
         );
 
-
     message.className =
         "message assistant";
-
 
     message.innerHTML =
         formatAssistantAnswer(
             content
         );
 
-
     chatMessages.appendChild(
         message
     );
-
 
     chatMessages.scrollTop =
         chatMessages.scrollHeight;
@@ -1186,233 +1110,24 @@ function formatAssistantAnswer(
 
     clean =
         clean.replace(
+            /\n{2,}/g,
+            "<br><br>"
+        );
+
+
+    clean =
+        clean.replace(
             /\n/g,
             "<br>"
         );
 
 
     return clean;
-
 }
 
 
 // ==================================================
 // PREFERENCES
-// ==================================================
-
-preferencesBtn.addEventListener(
-    "click",
-    openPreferences
-);
-
-
-document
-    .getElementById(
-        "closePreferences"
-    )
-    .addEventListener(
-        "click",
-        closePreferences
-    );
-
-
-document
-    .getElementById(
-        "savePreferences"
-    )
-    .addEventListener(
-        "click",
-        savePreferences
-    );
-
-
-document
-    .getElementById(
-        "resetPreferences"
-    )
-    .addEventListener(
-        "click",
-        resetPreferences
-    );
-
-
-function renderPreferences() {
-
-    preferencesList.innerHTML =
-        Object.entries(
-            preferences
-        )
-            .map(
-                ([category, priority]) => `
-
-                    <div class="preference-row">
-
-                        <div>
-
-                            <strong>
-                                ${escapeHtml(
-                                    category
-                                )}
-                            </strong>
-
-                            <small>
-                                ${
-                                    priority === "High"
-                                        ? "Show more prominently"
-                                        : priority === "Low"
-                                            ? "Lower ranking"
-                                            : "Balanced ranking"
-                                }
-                            </small>
-
-                        </div>
-
-
-                        <div class="priority-buttons">
-
-                            ${createPriorityButton(
-                                category,
-                                "High",
-                                priority
-                            )}
-
-                            ${createPriorityButton(
-                                category,
-                                "Medium",
-                                priority
-                            )}
-
-                            ${createPriorityButton(
-                                category,
-                                "Low",
-                                priority
-                            )}
-
-                        </div>
-
-                    </div>
-
-                `
-            )
-            .join("");
-
-}
-
-
-function createPriorityButton(
-    category,
-    value,
-    current
-) {
-
-    return `
-
-        <button
-            class="priority-button ${
-                current === value
-                    ? "selected"
-                    : ""
-            }"
-            data-category="${escapeAttribute(
-                category
-            )}"
-            data-priority="${value}"
-        >
-            ${value}
-        </button>
-
-    `;
-
-}
-
-
-preferencesList.addEventListener(
-    "click",
-    event => {
-
-        const button =
-            event.target.closest(
-                ".priority-button"
-            );
-
-
-        if (!button) {
-
-            return;
-
-        }
-
-
-        const category =
-            button.dataset.category;
-
-
-        const priority =
-            button.dataset.priority;
-
-
-        preferences[
-            category
-        ] = priority;
-
-
-        renderPreferences();
-
-    }
-);
-
-
-function openPreferences() {
-
-    preferencesModal.classList.remove(
-        "hidden"
-    );
-
-}
-
-
-function closePreferences() {
-
-    preferencesModal.classList.add(
-        "hidden"
-    );
-
-}
-
-
-function savePreferences() {
-
-    localStorage.setItem(
-        "dailybrief_preferences",
-        JSON.stringify(
-            preferences
-        )
-    );
-
-
-    closePreferences();
-
-}
-
-
-// ==================================================
-// RESET PREFERENCES
-// ==================================================
-
-function resetPreferences() {
-
-    preferences = {
-        ...DEFAULT_PREFERENCES
-    };
-
-
-    renderPreferences();
-
-}
-
-
-// ==================================================
-// LOCAL STORAGE
 // ==================================================
 
 function loadPreferences() {
@@ -1424,35 +1139,192 @@ function loadPreferences() {
                 "dailybrief_preferences"
             );
 
-
-        if (saved) {
-
+        if (!saved) {
             return {
-                ...DEFAULT_PREFERENCES,
-                ...JSON.parse(saved),
+                ...DEFAULT_PREFERENCES
             };
-
         }
 
-    } catch (error) {
+        return {
+            ...DEFAULT_PREFERENCES,
+            ...JSON.parse(saved)
+        };
 
-        console.error(
-            "Could not load preferences",
-            error
-        );
+    } catch {
+
+        return {
+            ...DEFAULT_PREFERENCES
+        };
 
     }
 
+}
 
-    return {
-        ...DEFAULT_PREFERENCES
-    };
+
+function savePreferencesToStorage() {
+
+    localStorage.setItem(
+        "dailybrief_preferences",
+        JSON.stringify(
+            preferences
+        )
+    );
+
+}
+
+
+function renderPreferences() {
+
+    if (!preferencesList) {
+        return;
+    }
+
+    preferencesList.innerHTML =
+        Object.entries(
+            preferences
+        )
+            .map(
+                ([category, priority]) => `
+
+                    <div class="preference-row">
+
+                        <div class="preference-category">
+                            ${escapeHtml(category)}
+                        </div>
+
+                        <div class="priority-options">
+
+                            ${["Low", "Medium", "High"]
+                                .map(
+                                    option => `
+                                        <button
+                                            type="button"
+                                            class="priority-button ${
+                                                priority === option
+                                                    ? "active"
+                                                    : ""
+                                            }"
+                                            data-category="${escapeAttribute(category)}"
+                                            data-priority="${option}"
+                                        >
+                                            ${option}
+                                        </button>
+                                    `
+                                )
+                                .join("")
+                            }
+
+                        </div>
+
+                    </div>
+
+                `
+            )
+            .join("");
+
+
+    preferencesList
+        .querySelectorAll(
+            ".priority-button"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const category =
+                        button.dataset.category;
+
+                    const priority =
+                        button.dataset.priority;
+
+                    preferences[category] =
+                        priority;
+
+                    renderPreferences();
+
+                }
+            );
+
+        });
 
 }
 
 
 // ==================================================
-// LOADING
+// PREFERENCE MODAL
+// ==================================================
+
+preferencesBtn.addEventListener(
+    "click",
+    () => {
+
+        preferencesModal.classList.remove(
+            "hidden"
+        );
+
+    }
+);
+
+
+document
+    .getElementById("closePreferences")
+    .addEventListener(
+        "click",
+        closePreferences
+    );
+
+
+document
+    .querySelector(".modal-backdrop")
+    .addEventListener(
+        "click",
+        closePreferences
+    );
+
+
+function closePreferences() {
+
+    preferencesModal.classList.add(
+        "hidden"
+    );
+
+}
+
+
+document
+    .getElementById("resetPreferences")
+    .addEventListener(
+        "click",
+        () => {
+
+            preferences = {
+                ...DEFAULT_PREFERENCES
+            };
+
+            renderPreferences();
+
+        }
+    );
+
+
+document
+    .getElementById("savePreferences")
+    .addEventListener(
+        "click",
+        () => {
+
+            savePreferencesToStorage();
+
+            closePreferences();
+
+        }
+    );
+
+
+// ==================================================
+// LOADING / ERROR
 // ==================================================
 
 function setLoading(
@@ -1462,14 +1334,6 @@ function setLoading(
     if (state) {
 
         loading.classList.remove(
-            "hidden"
-        );
-
-        brief.classList.add(
-            "hidden"
-        );
-
-        chatSection.classList.add(
             "hidden"
         );
 
@@ -1484,17 +1348,12 @@ function setLoading(
 }
 
 
-// ==================================================
-// ERROR
-// ==================================================
-
 function showError(
     message
 ) {
 
     errorBox.textContent =
         message;
-
 
     errorBox.classList.remove(
         "hidden"
@@ -1509,6 +1368,8 @@ function hideError() {
         "hidden"
     );
 
+    errorBox.textContent = "";
+
 }
 
 
@@ -1520,38 +1381,25 @@ function escapeHtml(
     value
 ) {
 
-    if (
-        value === null ||
-        value === undefined
-    ) {
-
-        return "";
-
-    }
-
-
-    return String(value)
-
+    return String(
+        value ?? ""
+    )
         .replace(
             /&/g,
             "&amp;"
         )
-
         .replace(
             /</g,
             "&lt;"
         )
-
         .replace(
             />/g,
             "&gt;"
         )
-
         .replace(
             /"/g,
             "&quot;"
         )
-
         .replace(
             /'/g,
             "&#039;"
