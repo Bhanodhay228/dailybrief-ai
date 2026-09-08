@@ -2074,3 +2074,32 @@ a:focus-visible {
     }
 
 }
+
+.priority-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.priority-button {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.priority-button:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.priority-button.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
